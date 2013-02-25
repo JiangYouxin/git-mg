@@ -1,0 +1,61 @@
+#! /bin/sh
+
+BRANCH=$1
+
+echo "Merge $BRANCH into HEAD..."
+
+git merge $1 -Xpatience -Xignore-all-space -Xrename-threshold=90 -Xrenormalize
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "There were merge conflicts. "
+    echo ""
+    echo "You are now in a subshell."
+    echo ""
+    echo "To resolve the conflicts, use:"
+    echo "    git mergetool"
+    echo "    git commit"
+    echo "    exit 0"
+    echo ""
+    echo "Or use a bisect algorithm:"
+    echo "    exit 1"
+    echo ""
+    echo "To exit the entire 'git mg' session, use:"
+    echo "    exit 2"
+    echo ""
+
+    sh -i </dev/tty
+    USERRET=$?
+
+    if [ $USERRET -ne 0 ]; then
+        echo "Abort merge..."
+        git merge --abort
+        echo "Abort merge success." 
+    fi
+
+    if [ $USERRET -eq 1 ]; then
+        REVCOUNT=`git rev-list HEAD..$BRANCH | wc -l`
+
+        if [ $REVCOUNT -eq 1 ]; then
+            echo "use 'ours' strategy to skip current commit: $BRANCH"
+            git merge $BRANCH -s ours
+        else
+            BISECTINT=`awk "BEGIN{printf(\"%.f\",$REVCOUNT/2)}"`;
+            BISECTCOMMIT=`git rev-parse "$BRANCH~$BISECTINT"`
+
+            git mg $BISECTCOMMIT
+
+            if [ $? -eq 0 ]; then
+                git mg $BRANCH
+            else
+                exit 2
+            fi
+        fi
+    else
+        exit 2
+    fi
+else
+    echo "Merge $BRANCH into HEAD success."
+fi
+
+exit 0
