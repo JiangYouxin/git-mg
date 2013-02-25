@@ -14,7 +14,7 @@ git-mg在这种情况下会采用二分法逐步缩小逐步范围，逐步解�
 我只测试过 Windows + cygwin 的环境，linux应该也是一样的。
 
     git clone https://github.com/JiangYouxin/git-mg.git
-    cd 
+    cd git-mg 
     make install
 
 使用 
@@ -44,7 +44,7 @@ git-mg在这种情况下会采用二分法逐步缩小逐步范围，逐步解�
   可以一直使用`exit 1`，将合并范围不断缩小，直到冲突的数量可控时再解决。
 
   有一个例外是branch上只有一个commit了。  
-  此时git-mg会使用`git merge -r ours <commit>`跳过这个提交，以便继续 git-mg session。  
+  此时git-mg会使用`git merge -s ours <commit>`跳过这个提交，以便继续 git-mg session。  
   请记住被跳过的commit的SHA号以便未来处理。
 
 * 退出git mg
