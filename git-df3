@@ -1,0 +1,58 @@
+#! /bin/sh
+
+TOOL=$2
+BASEFILE=$3
+B1FILE=$4
+B2FILE=$5
+OUTFILE=$6
+
+TEMPDIR=mergetemp
+
+echo "generate base files from $BASEFILE..."
+mkdir $TEMPDIR
+cat $BASEFILE | $TOOL -w $TEMPDIR
+cd $TEMPDIR
+git init
+git add -A
+git commit -m "base files..."
+
+git checkout -b b1
+echo "generate b1 files from $B1FILE..."
+cd ..
+cat $B1FILE | $TOOL -w $TEMPDIR
+cd $TEMPDIR
+git add -A
+git commit -m "b1 files"
+
+git checkout master -b b2
+echo "generate b2 files from $B2FILE..."
+cd ..
+cat $B2FILE | $TOOL -w $TEMPDIR
+cd $TEMPDIR
+git add -A
+git commit -m "b2 files"
+
+echo "try to merge b1 to b2"
+git merge b1
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "There were merge conflicts. "
+    echo ""
+    echo "You are now in a subshell."
+    echo ""
+    echo "To resolve the conflicts, use:"
+    echo "    git mergetool"
+    echo "    git commit"
+    echo "    exit 0"
+
+    sh -i </dev/tty
+fi
+git clean -f
+
+echo "write result to $OUTFILE..."
+cd ..
+$TOOL -r $TEMPDIR > $OUTFILE
+rm -rf $TEMPDIR
+
+

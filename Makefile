@@ -1,8 +1,8 @@
 prefix=/usr/local
 
 # files that need mode 755
-EXEC_FILES=git-mg
-
+EXEC_FILES =git-mg
+EXEC_FILES+=git-df3
 
 all:
 	@echo "usage: make install"
