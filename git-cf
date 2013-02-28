@@ -78,7 +78,7 @@ sub output_with_filter {
         # 这里可以优化，先归并排序f1, f2，然后再归并输出，只需要一次遍历
         next if exist($f1, $i); 
         next if exist($f2, $i);
-        print $output->[$i];
+        push @output_lines, $output->[$i];
     }
 }
 
@@ -86,19 +86,20 @@ sub conflict_all() {
     my $lcs_ours = array_lcs(\@ours, \@base);
     my $lcs_theirs = array_lcs(\@theirs, \@base);
     
-    print "<<<<<<<\n";
+    push @output_lines, $cfline1;
     output_with_filter(\@ours, $lcs_ours->[0], \());
-    print "|||||||\n";
+    push @output_lines, $cfline2;
     output_with_filter(\@base, $lcs_ours->[1], $lcs_theirs->[1]);
-    print "=======\n";
+    push @output_lines, $cfline3;
     output_with_filter(\@theirs, $lcs_theirs->[0], \());
-    print ">>>>>>>\n";
+    push @output_lines, $cfline4;
 }
 
 sub conflict_theirs {
     local @theirs = ();
-    while ($line = <STDIN>) {
+    while ($line = <$file>) {
         if ($line =~ /^>>>>>>>/) {
+            local $cfline4 = $line;
             &conflict_all;
             last;
         } else {
@@ -109,8 +110,9 @@ sub conflict_theirs {
 
 sub conflict_base {
     local @base = ();
-    while ($line = <STDIN>) {
+    while ($line = <$file>) {
         if ($line =~ /^\=\=\=\=\=\=\=/) {
+            local $cfline3 = $line;
             &conflict_theirs;
             last;
         } else {
@@ -120,8 +122,9 @@ sub conflict_base {
 }
 sub conflict_ours {
     local @ours = ();
-    while ($line = <STDIN>) {
+    while ($line = <$file>) {
         if ($line =~ /\|\|\|\|\|\|\|/) {
+            local $cfline2 = $line;
             &conflict_base;
             last;
         } else {
@@ -130,10 +133,29 @@ sub conflict_ours {
     }
 }
 
-while ($line = <STDIN>) {
-    if ($line =~ /^<<<<<<</) {
-        &conflict_ours;
-    } else {
-        print $line;
+
+sub main {
+    my $filename = $ARGV[0];
+    local $file;
+
+    open $file, "<$filename" or die "can not open $filename for read.";
+    @output_lines = ();
+
+    while ($line = <$file>) {
+        if ($line =~ /^<<<<<<</) {
+            local $cfline1 = $line;
+            &conflict_ours;
+        } else {
+            push @output_lines, $line;
+        }
     }
+    close $file;
+
+    open $file, ">$filename" or die "can not open $filename for write.";
+    foreach (@output_lines) {
+        print $file $_;
+    }
+    close $file;
 }
+
+&main
