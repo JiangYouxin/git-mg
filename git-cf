@@ -61,7 +61,7 @@ sub array_lcs {
         }
         $it = $it->[0];
     }
-    return [\@is, \@js];
+    return (\@is, \@js);
 }
 
 sub exist {
@@ -83,16 +83,25 @@ sub output_with_filter {
 }
 
 sub conflict_all() {
-    my $lcs_ours = array_lcs(\@ours, \@base);
-    my $lcs_theirs = array_lcs(\@theirs, \@base);
+    my ($lcs_ours, $lcs_ours_base) = array_lcs(\@ours, \@base);
+    my ($lcs_theirs, $lcs_theirs_base) = array_lcs(\@theirs, \@base);
+   
+    my $push_cf_lines = 1;
     
-    push @output_lines, $cfline1;
-    output_with_filter(\@ours, $lcs_ours->[0], \());
-    push @output_lines, $cfline2;
-    output_with_filter(\@base, $lcs_ours->[1], $lcs_theirs->[1]);
-    push @output_lines, $cfline3;
-    output_with_filter(\@theirs, $lcs_theirs->[0], \());
-    push @output_lines, $cfline4;
+    my $lcs_ours_num = @$lcs_ours;
+    my $lcs_theirs_num = @$lcs_theirs;
+
+    if ($lcs_ours_num + $lcs_theirs_num == @base and ($lcs_ours_num == @ours or $lcs_theirs_num == @theirs)) {
+        $push_cf_lines = 0;
+    }
+    
+    push @output_lines, $cfline1 unless $push_cf_lines == 0;
+    output_with_filter(\@ours, $lcs_ours, \());
+    push @output_lines, $cfline2 unless $push_cf_lines == 0;
+    output_with_filter(\@base, $lcs_ours_base, $lcs_theirs_base);
+    push @output_lines, $cfline3 unless $push_cf_lines == 0;
+    output_with_filter(\@theirs, $lcs_theirs, \());
+    push @output_lines, $cfline4 unless $push_cf_lines == 0;
 }
 
 sub conflict_theirs {
