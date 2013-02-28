@@ -95,6 +95,8 @@ sub conflict_all() {
         $push_cf_lines = 0;
     }
     
+    $has_conflict = 1 if $push_cf_lines == 1;
+
     push @output_lines, $cfline1 unless $push_cf_lines == 0;
     output_with_filter(\@ours, $lcs_ours, \());
     push @output_lines, $cfline2 unless $push_cf_lines == 0;
@@ -152,6 +154,7 @@ sub main {
     }
 
     local $file;
+    local $has_conflict = 0;
 
     open $file, "<$filename" or die "can not open $filename for read.";
     @output_lines = ();
@@ -171,6 +174,8 @@ sub main {
         print $file $_;
     }
     close $file;
+
+    return $has_conflict;
 }
 
-&main
+exit main();
