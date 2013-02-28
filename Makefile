@@ -4,6 +4,7 @@ prefix=/usr/local
 EXEC_FILES =git-mg
 EXEC_FILES+=git-df3
 EXEC_FILES+=git-mgfile
+EXEC_FILES+=git-cf
 
 all:
 	@echo "usage: make install"

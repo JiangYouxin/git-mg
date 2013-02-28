@@ -1,0 +1,139 @@
+#! /usr/bin/perl
+
+sub same {
+    my ($i, $j) = @_;
+    if ($array1->[$i] eq $array2->[$j]) {
+        #print "$i $j\n";
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+sub new_next {
+    my ($next, $score0, $i, $j, $s) = @_;
+
+    my $score1 = 0;
+    my $score1 = $result[$i]->[$j]->[1] if $i >= 0 and $j >= 0;
+    $score1 += $s;
+
+    return ($next, $score0, 0) if $score0 > $score1;
+    return ($result[$i]->[$j], $score1, $s) if $i >= 0 and $j >= 0;
+    return (undef, $score1, $s);
+}
+
+sub array_lcs {  
+#这是O(n ^ 2)的算法；据说有nlog(n)的算法
+    local ($array1, $array2) = @_;
+
+    my $l1 = @$array1;
+    my $l2 = @$array2;
+
+    return [\(), \()] if $l1 == 0 or $l2 == 0;
+
+    local @result = ();
+
+    for ($i = 0; $i < $l1; $i++) {
+        for ($j = 0; $j < $l2; $j++) {
+            my $next = undef;
+            my $score0 = 0;
+            my $s = 0;
+
+            ($next, $score0, $s) = new_next($next, $score0, $i - 1, $j, 0);
+            ($next, $score0, $s) = new_next($next, $score0, $i, $j - 1, 0);
+            ($next, $score0, $s) = new_next($next, $score0, $i - 1, $j - 1, same($i, $j));
+          
+            #print "$i, $j, $score0, $next\n"; 
+            $result[$i]->[$j] = [$next, $score0, $s, $i, $j];
+        }
+    }
+
+    my @is = ();
+    my @js = ();
+    my $it = @result[$l1 - 1]->[$l2 - 1];
+
+    #print "===\n$it->[3], $it->[4], $it->[1]\n";
+
+    while ($it) {
+        if ($it->[2] == 1) {
+            push @is, $it->[3];
+            push @js, $it->[4];
+        }
+        $it = $it->[0];
+    }
+    return [\@is, \@js];
+}
+
+sub exist {
+    my ($f, $n) = @_;
+    foreach(@$f) {
+        return 1 if $n == $_;
+    }
+    return 0;
+}
+
+sub output_with_filter {
+    my ($output, $f1, $f2) = @_;
+    for ($i = 0; $i < @$output; $i++) {
+        # 这里可以优化，先归并排序f1, f2，然后再归并输出，只需要一次遍历
+        next if exist($f1, $i); 
+        next if exist($f2, $i);
+        print $output->[$i];
+    }
+}
+
+sub conflict_all() {
+    my $lcs_ours = array_lcs(\@ours, \@base);
+    my $lcs_theirs = array_lcs(\@theirs, \@base);
+    
+    print "<<<<<<<\n";
+    output_with_filter(\@ours, $lcs_ours->[0], \());
+    print "|||||||\n";
+    output_with_filter(\@base, $lcs_ours->[1], $lcs_theirs->[1]);
+    print "=======\n";
+    output_with_filter(\@theirs, $lcs_theirs->[0], \());
+    print ">>>>>>>\n";
+}
+
+sub conflict_theirs {
+    local @theirs = ();
+    while ($line = <STDIN>) {
+        if ($line =~ /^>>>>>>>/) {
+            &conflict_all;
+            last;
+        } else {
+            push @theirs, $line;
+        }
+    }   
+}
+
+sub conflict_base {
+    local @base = ();
+    while ($line = <STDIN>) {
+        if ($line =~ /^\=\=\=\=\=\=\=/) {
+            &conflict_theirs;
+            last;
+        } else {
+            push @base, $line;
+        }
+    }
+}
+sub conflict_ours {
+    local @ours = ();
+    while ($line = <STDIN>) {
+        if ($line =~ /\|\|\|\|\|\|\|/) {
+            &conflict_base;
+            last;
+        } else {
+            push @ours, $line;
+        }
+    }
+}
+
+while ($line = <STDIN>) {
+    if ($line =~ /^<<<<<<</) {
+        &conflict_ours;
+    } else {
+        print $line;
+    }
+}
