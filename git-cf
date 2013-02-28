@@ -91,7 +91,7 @@ sub conflict_all() {
     my $lcs_ours_num = @$lcs_ours;
     my $lcs_theirs_num = @$lcs_theirs;
 
-    if ($lcs_ours_num + $lcs_theirs_num == @base and ($lcs_ours_num == @ours or $lcs_theirs_num == @theirs) or $agg == 1) {
+    if ($lcs_ours_num + $lcs_theirs_num == @base and ($lcs_ours_num == @ours or $lcs_theirs_num == @theirs or $agg == 1)) {
         $push_cf_lines = 0;
     }
     
