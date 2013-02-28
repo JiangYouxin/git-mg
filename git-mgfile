@@ -1,0 +1,12 @@
+#! /bin/sh
+
+BRANCH=$1
+BASE=$2
+FILE=$3
+FILEBRANCH="$FILE.branch"
+FILEBASE="$FILE.base"
+
+git show $BRANCH:$FILE > $FILEBRANCH
+git show $BASE:$FILE > $FILEBASE
+
+git mergefile -L local -L base -L branch $FILE $FILEBASE $FILEBRANCH
