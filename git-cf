@@ -145,13 +145,7 @@ sub conflict_ours {
 }
 
 sub main {
-    my $filename = $ARGV[0];
-    local $agg = 0;
-
-    if ($filename eq "-g") {
-        $agg = 1;
-        $filename = $ARGV[1];
-    }
+    my $filename = $_[0];
 
     local $file;
     local $has_conflict = 0;
@@ -177,5 +171,22 @@ sub main {
 
     return $has_conflict;
 }
+    
+my $filename = $ARGV[0];
+local $agg = 0;
 
-exit main();
+if ($filename eq "-g") {
+    $agg = 1;
+    $filename = $ARGV[1];
+}
+
+if ($filename) {
+    exit main($filename);
+} else {
+    my $files = `git status`;
+    while ($files =~ /.*both modified:      (.*)/g) {
+        my $filename = $1;
+        my $ret = main($filename);
+        system "git add $filename" if $ret == 0;
+    }
+}
