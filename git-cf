@@ -91,7 +91,7 @@ sub conflict_all() {
     my $lcs_ours_num = @$lcs_ours;
     my $lcs_theirs_num = @$lcs_theirs;
 
-    if ($lcs_ours_num + $lcs_theirs_num == @base and ($lcs_ours_num == @ours or $lcs_theirs_num == @theirs)) {
+    if ($lcs_ours_num + $lcs_theirs_num == @base and ($lcs_ours_num == @ours or $lcs_theirs_num == @theirs) or $agg == 1) {
         $push_cf_lines = 0;
     }
     
@@ -142,9 +142,15 @@ sub conflict_ours {
     }
 }
 
-
 sub main {
     my $filename = $ARGV[0];
+    local $agg = 0;
+
+    if ($filename eq "-g") {
+        $agg = 1;
+        $filename = $ARGV[1];
+    }
+
     local $file;
 
     open $file, "<$filename" or die "can not open $filename for read.";
