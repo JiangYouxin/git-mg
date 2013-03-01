@@ -13,6 +13,7 @@ all:
 install:
 	install -d -m 0755 $(prefix)/bin
 	install -m 0755 $(EXEC_FILES) $(prefix)/bin
+	sh testcf/testcf.sh
 
 uninstall:
 	test -d $(prefix)/bin && \

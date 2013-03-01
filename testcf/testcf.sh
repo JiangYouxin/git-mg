@@ -1,6 +1,6 @@
 # /bin/sh
 
-for TESTFILE in *.test; do
+for TESTFILE in testcf/*.test; do
     RESULTFILE="$TESTFILE.result"
     RESULTFILEG="$TESTFILE.result.g"
     RETFILE="$TESTFILE.ret"
