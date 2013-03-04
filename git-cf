@@ -1,8 +1,14 @@
 #! /usr/bin/perl
 
+sub removeM {
+    $line = $_[0];
+    $line =~ s/\r//;
+    return $line;
+}
+
 sub same {
     my ($i, $j) = @_;
-    if ($array1->[$i] eq $array2->[$j]) {
+    if (removeM($array1->[$i]) eq removeM($array2->[$j])) {
         #print "$i $j\n";
         return 1;
     } else {
@@ -118,7 +124,6 @@ sub conflict_theirs {
         }
     }   
 }
-
 sub conflict_base {
     local @base = ();
     while ($line = <$file>) {
