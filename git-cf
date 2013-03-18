@@ -89,6 +89,10 @@ sub output_with_filter {
 }
 
 sub conflict_all() {
+    if ($patch == 1) {
+        push @output_lines, @ours;
+        return;
+    }
     my ($lcs_ours, $lcs_ours_base) = array_lcs(\@ours, \@base);
     my ($lcs_theirs, $lcs_theirs_base) = array_lcs(\@theirs, \@base);
    
@@ -179,9 +183,14 @@ sub main {
     
 my $filename = $ARGV[0];
 local $agg = 0;
+local $patch = 0;
 
 if ($filename eq "-g") {
     $agg = 1;
+    $filename = $ARGV[1];
+}
+if ($filename eq "-p") {
+    $patch = 1;
     $filename = $ARGV[1];
 }
 
@@ -192,6 +201,6 @@ if ($filename) {
     while ($files =~ /.*both modified:      (.*)/g) {
         my $filename = $1;
         my $ret = main($filename);
-        system "git add $filename" if $ret == 0;
+        system "git add $filename" if $ret == 0 || $patch == 1;
     }
 }
